@@ -466,8 +466,8 @@ void* ll_pop(LinkedList* this,int index)
     void* returnAux = NULL;
     ///valido q this no sea null, indice sea mayor o igual a cero y menor  al tamaño de la lista
     if(this!=NULL && index>=0 && index<=ll_len(this))
-        {   ///llamo a addnode y pido el nodo del indie, y lo retorno
-            returnAux=getNode(this,index);
+        {   /// pido el nodo del indie, y lo retorno
+            returnAux=ll_get(this,index);
             ///si el retorno es distinto de NULL
             if(returnAux!=NULL)
                 {
@@ -524,29 +524,34 @@ int ll_containsAll(LinkedList* this,LinkedList* this2)
 {
     int returnAux = -1;
     ///Puntero a nodo auxiliar
-    //void* pElement_this=NULL;
-    Node* pElement_this=NULL;
+    void* pElement_this=NULL;
+    //Node* pElement_this=NULL;
    int i, tam_lita1, tam_lita2, returnLista1;
-
+   ///verifico que ambos thiss no sean NULL
    if(this!=NULL && this2!=NULL)
-    {
-        //tam_lita1=ll_len(this);
+    {   ///pido los tamaños de cada lista
+        tam_lita1=ll_len(this);
         tam_lita2=ll_len(this2);
-        returnAux=0;
-        for(i=0;i<tam_lita2;i++)
-           {
-                pElement_this=getNode(this2,i);
-                returnLista1=ll_contains(this,pElement_this);
-                returnAux=ll_contains(this,pElement_this);
-                /*if(returnLista1==0)
-                   {
-                      returnAux=0;
-                      //break;
-                   }
-                else if(returnLista1==1)
-                    {
-                        returnAux=1;
-                    }*/
+        returnAux=1;
+        ///valido que this2 no sea mayor a this
+        if(tam_lita1<tam_lita2)
+            {   ///recorro this2
+                for(i=0;i<tam_lita2;i++)
+                 {  ///pido un elemento
+                    pElement_this=ll_get(this2,i);
+                    ///verifico que ese elemento este en this
+                    returnLista1=ll_contains(this,pElement_this);
+                    ///segun lo retornado cambio el estado de returnaux
+                    if(returnLista1==0)
+                      {
+                          returnAux=0;
+                          break;
+                      }
+                    else if(returnLista1==1)
+                      {
+                          returnAux=1;
+                      }
+                  }
 
             }
     }
@@ -567,8 +572,30 @@ int ll_containsAll(LinkedList* this,LinkedList* this2)
 */
 LinkedList* ll_subList(LinkedList* this,int from,int to)
 {
+    ///puntero a la lista clonada que retorna
     LinkedList* cloneArray = NULL;
+    ///puntero auxiliar a cada elemento a usar
+    void* pNewList=NULL;
 
+    int tam_list, i;
+    ///verifico que la lista no sea NULL
+    if(this!=NULL)
+        {   ///pido el tamaño de la lista
+            tam_list=ll_len(this);
+            ///verifico que from sea mayor o igual a 0 y menor al tamaño de la lista
+            ///verifico q to sea mayor o igual al from y menor o igual al tamaño de la lista
+            if(from>=0 && from<tam_list && to>=from && to<=tam_list )
+                {   ///llamo al constructor para mi nueva lista
+                    cloneArray=ll_newLinkedList();
+                    ///recorro this segun los datos ingresados
+                    for(i=from;i<to;i++)
+                        {  ///pido cada elemento de la lista segun el indice ingresado
+                           pNewList=ll_get(this,i);
+                           ///agrego cada elemento pedido a la nueva lista
+                           ll_add(cloneArray, pNewList);
+                        }
+                }
+        }
     return cloneArray;
 }
 
@@ -585,7 +612,28 @@ LinkedList* ll_subList(LinkedList* this,int from,int to)
 LinkedList* ll_clone(LinkedList* this)
 {
     LinkedList* cloneArray = NULL;
+   /* ///puntero auxiliar a cada elemento a usar
+    void* pNewList=NULL;
+    int tam_list, i;
+    ///verifica que this sea distinto de NULL
+    if(this!=NULL)
+        {   ///pido tamaño de la lista
+            tam_list=ll_len(this);
+            ///llamo al constructo para mi nueva lista
+            cloneArray=ll_newLinkedList();
+            ///recorro la lista
+            for(i=0;i<tam_list;i++)
+                {   ///pido cada elemento de la lista segun el indice ingresado
+                    pNewList=ll_get(this, i);
+                    ///agrego cada elemento pedido a la nueva lista
+                    ll_add(cloneArray,pNewList);
+                }
+        }*/
 
+        if(this!=NULL)
+            {
+                cloneArray=ll_subList(this,0,ll_len(this));
+            }
     return cloneArray;
 }
 
@@ -602,6 +650,56 @@ LinkedList* ll_clone(LinkedList* this)
 int ll_sort(LinkedList* this, int (*pFunc)(void* ,void*), int order)
 {
     int returnAux =-1;
+    ///punteros a nodos donde copiare cada elemento para ordenar
+    void* pNodo_1=NULL;
+    void* pNodo_2=NULL;
+    void* pAux=NULL;
+
+    int tam_lista,i,j;
+    ///valido q this y la pFunc no sean NULL
+    if(this!=NULL && pFunc!=NULL)
+        {   ///valido que erder reciva los datos validos
+            if(order==1 || order==0)
+                {   ///pid tamaño de la lista
+                    tam_lista=ll_len(this);
+                    ///recorro la lista desde el inicio  hasta el ultimo menos uno
+                    for(i=0;i<tam_lista-1;i++)
+                        {   ///pido los elementos
+                            pNodo_1=ll_get(this,i);
+                            ///recorro la lista desde el indice mas uno hasta el final de la lista
+                            for(j=i+1;j<tam_lista;j++)
+                                {   ///pido los elementos
+                                    pNodo_2=ll_get(this,j);
+                                    ///ordeno de manera ascendente
+                                    if(order==1)
+                                        {
+                                            if(pFunc(pNodo_1,pNodo_2)>0)
+                                               {
+                                                    pAux=pNodo_1;
+                                                    pNodo_1=pNodo_2;
+                                                    pNodo_2=pAux;
+                                               }
+                                        }
+                                     ///ordeno de manera descendente
+                                     else
+                                        {
+                                            if(pFunc(pNodo_1,pNodo_2)<0)
+                                               {
+                                                    pAux=pNodo_2;
+                                                    pNodo_2=pNodo_1;
+                                                    pNodo_1=pAux;
+                                               }
+                                        }
+                                     ///seteo los elementos ordenaos
+                                     ll_set(this,i,pNodo_1);
+                                     ll_set(this,j,pNodo_2);
+
+                                }
+                        }
+                returnAux=0;
+
+                }
+        }
 
     return returnAux;
 
